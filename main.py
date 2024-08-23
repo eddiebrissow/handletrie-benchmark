@@ -226,13 +226,13 @@ def main():
     #         3)
 
 
-    # for i in [1000, 100000, 1000000]:
-    #     generate_random(i)
-    #     print(f"Testing {i} nodes")
-    #     repeat(benchmark_cpython_handle_trie, [
-    #         {'f': test_cpython_handle_trie, 'name': 'benchmark_cpython_handle_trie', 'n_insertions': i}, 
-    #         {'f': none, 'name': 'benchmark_cpython_handle_trie', 'n_insertions': i}], 
-    #         3)
+    for i in [1000, 100000, 1000000]:
+        generate_random(i)
+        print(f"Testing {i} nodes")
+        repeat(benchmark_cpython_handle_trie, [
+            {'f': test_cpython_handle_trie, 'name': 'benchmark_cpython_handle_trie', 'n_insertions': i}, 
+            {'f': none, 'name': 'benchmark_cpython_handle_trie', 'n_insertions': i}], 
+            3)
 
     
 

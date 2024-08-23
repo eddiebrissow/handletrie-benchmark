@@ -4,7 +4,7 @@ import os
 import sys
 from os import listdir
 from os.path import isfile, join
-onlyfiles = [f"src/{f}" for f in listdir('src/') if isfile(join('src/', f)) and '.h' not in f and 'main' not in f and 'pybind' not in f] 
+onlyfiles = [f"src/{f}" for f in listdir('src/') if isfile(join('src/', f)) and '.h' not in f and 'main' not in f and 'pybind' not in f and 'nanobind' not in f] 
 print(onlyfiles)
 
 openssl_include_dir = '/usr/include/openssl/include'
