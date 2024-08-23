@@ -15,24 +15,24 @@
 ### Build C++
 
 ```
-make compile
+make build
 ```
 
 ### Build CPython
 ```
-make compile-cpython
+make build-cpython
 ```
 
 
 ### Build PyBind
 
 ```
-make compile-pybind
+make build-pybind
 ```
 
 
 ### Build NanoBind
 
 ```
-make compile-nanobind
+make build-nanobind
 ```
