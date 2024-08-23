@@ -17,23 +17,17 @@ class Value: public HandleTrie::TrieValue {
         PyObject*  value_;
         Value(PyObject* value) {
             this->value_ = value;
-            Py_XINCREF(value_);
+            // Py_XINCREF(value_);
         }
         void merge(TrieValue *other) {
 
         }
         ~Value() {
-            Py_XDECREF(value_);
-        }
-
-        PyObject* get_value(){
-            return this->value_;
+            delete value_;
+            // Py_XDECREF(value_);
         }
 
         std::string to_string(){
-            // PyObject* objectsRepresentation = PyObject_Repr(this->value_);
-            string s = PyBytes_AS_STRING(this->value_);
-            return s;
         }
 };
 

@@ -203,14 +203,17 @@ def bbb(f):
 def main():
     # global TIME
 
-    a = HandleTrie(5)
-    a.insert("aaaaa", "1")
-    a.insert("aaaab", "2")
-    a.insert("aaaac", "3")
+    # a = HandleTrie(5)
+    # a.insert("aaaaa", "1")
+    # a.insert("aaaab", "2")
+    # a.insert("aaaac", "3")
 
-    print(a.lookup("aaaaa"))
-    print(a.lookup("aaaab"))
-    print(a.lookup("aaazc"))
+    # print('lookip')
+    # print(a.lookup("aaazc"))
+
+    # print(a.lookup("aaaaa"))
+    # print(a.lookup("aaaab"))
+    # print(a.lookup("aaazc"))
 
     # [1000, 100000, 1000000, 10000000, 1000000000]
 
