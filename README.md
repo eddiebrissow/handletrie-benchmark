@@ -15,15 +15,12 @@
 ### Build C++
 
 ```
-ln -s CMakeListsCXX.txt CMakeLists.txt
-cd build
-cmake ..
-make
+make compile
 ```
 
 ### Build CPython
 ```
-python setup.py build_ext --inplace
+make compile-cpython
 
 ```
 
@@ -31,8 +28,12 @@ python setup.py build_ext --inplace
 ### Build PyBind
 
 ```
-ln -s CMakeListsPyBind.txt CMakeLists.txt
-cd build
-cmake ..
-make
+make compile-pybind
+```
+
+
+### Build NanoBind
+
+```
+make compile-nanobind
 ```
