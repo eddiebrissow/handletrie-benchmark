@@ -1,6 +1,6 @@
 # WIP
 
-# Benchmark
+## Initial Benchmark Assessment
 |  Impl |  1000n  | 100000n  | 1000000n  | 10000000n | Memory |
 |---|---|---|---|---|---|
 | Python's Dict  | 0.0009  | 0.017  | 1.79  |  21.27 | 2.4GB |
