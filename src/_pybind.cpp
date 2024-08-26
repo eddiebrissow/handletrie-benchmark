@@ -29,7 +29,7 @@ class Value : public HandleTrie::TrieValue {
 
 
 
-PYBIND11_MODULE(handletrie, m) {
+PYBIND11_MODULE(handletrie_pybind, m) {
 
     py::class_<HandleTrie>(m, "HandleTrie")
         .def(py::init<int>())

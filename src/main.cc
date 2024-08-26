@@ -679,7 +679,83 @@ void test9(){
     }
 }
 
-int main(){
+
+void benchmark_handletrie(unsigned int n_insertions = 1000000){
+    char buffer[1000];
+    TestValue *value;
+    for (unsigned int key_count: {1, 2, 5}) {
+        unsigned int key_size = (HANDLE_HASH_SIZE - 1) * key_count;
+        HandleTrie *trie = new HandleTrie(key_size);
+        for (unsigned int i = 0; i < n_insertions; i++) {
+            for (unsigned int j = 0; j < key_size; j++) {
+                buffer[j] = R_TLB[(rand() % 16)];
+            }
+            buffer[key_size] = 0;
+            string s = buffer;
+            value = (TestValue *) trie->lookup(s);
+            if (value == NULL) {
+                value = new TestValue();
+                trie->insert(s, value);
+            } else {
+                value->count += 1;
+            }
+        }
+        
+    }
+}
+
+
+
+void benchmark_none(unsigned int n_insertions = 1000000){
+    char buffer[1000];
+    for (unsigned int key_count: {1, 2, 5}) {
+        unsigned int key_size = (HANDLE_HASH_SIZE - 1) * key_count;
+        for (unsigned int i = 0; i < n_insertions; i++) {
+            for (unsigned int j = 0; j < key_size; j++) {
+                buffer[j] = R_TLB[(rand() % 16)];
+            }
+            buffer[key_size] = 0;
+            string s = buffer;
+        }
+    }
+  
+}
+
+
+void benchmark_map(unsigned int n_insertions = 1000000){
+    char buffer[1000];
+    map<string, int> baseline;
+    for (unsigned int key_count: {1, 2, 5}) {
+        unsigned int key_size = (HANDLE_HASH_SIZE - 1) * key_count;
+        for (unsigned int i = 0; i < n_insertions; i++) {
+            for (unsigned int j = 0; j < key_size; j++) {
+                buffer[j] = R_TLB[(rand() % 16)];
+            }
+            buffer[key_size] = 0;
+            string s = buffer;
+            if (baseline.find(s) == baseline.end()) {
+                baseline[s] = 0;
+            }
+            baseline[s] = baseline[s] + 1;
+        }
+    }
+}
+
+
+int main(int argc, char *argv[]){
+
+
+    string option = argv[1];
+    if (option == "handletrie"){
+        benchmark_handletrie(atoi(argv[2]));
+    }
+    if (option == "none"){
+        benchmark_none(atoi(argv[2]));
+    }
+    if (option == "map"){
+        benchmark_map(atoi(argv[2]));
+    }
+    
 
 
     // HandleTrie trie(3);
@@ -700,34 +776,34 @@ int main(){
     // test5();
     // test6();
     // test7(100000);
-    const int REPEATS = 3;
-    int max = 1000000000;
-    // const float repeats[REPEATS] = {0.0};
-    map<string, vector<double>> m;
-    // for (int i=1000; i< max; i*=5){
-    for (unsigned int i: {1000, 10000, 100000, 1000000}){
+    // const int REPEATS = 3;
+    // int max = 1000000000;
+    // // const float repeats[REPEATS] = {0.0};
+    // map<string, vector<double>> m;
+    // // for (int i=1000; i< max; i*=5){
+    // for (unsigned int i: {1000, 10000, 100000, 1000000}){
 
-        cout << "Testing " << i << " nodes" << endl;
-        float sum_std = 0;
-        float sum_trie = 0;
-        float sum_none = 0;
-        for(int j=0; j < REPEATS; j++){
-            float* values = test7(i);
-            m["std_map"].push_back(values[0]);
-            m["trie"].push_back(values[1]);
-            m["std_map_diff"].push_back(values[0] - values[2]);
-            m["trie_diff"].push_back(values[1] - values[2]);
+    //     cout << "Testing " << i << " nodes" << endl;
+    //     float sum_std = 0;
+    //     float sum_trie = 0;
+    //     float sum_none = 0;
+    //     for(int j=0; j < REPEATS; j++){
+    //         float* values = test7(i);
+    //         m["std_map"].push_back(values[0]);
+    //         m["trie"].push_back(values[1]);
+    //         m["std_map_diff"].push_back(values[0] - values[2]);
+    //         m["trie_diff"].push_back(values[1] - values[2]);
 
-        }
-        cout << "std_map = Average: " << accumulate(m["std_map"].begin(), m["std_map"].end(), 0.0) / REPEATS << " STDEV: " << variance(m["std_map"]) << endl;
-        cout << "trie = Average: " << accumulate(m["trie"].begin(), m["trie"].end(), 0.0) / REPEATS << " STDEV: " << variance(m["trie"]) << endl;
-        cout << "std_map diff = Average: " << accumulate(m["std_map_diff"].begin(), m["std_map_diff"].end(), 0.0) / REPEATS << " STDEV: " << variance(m["std_map_diff"]) << endl;
-        cout << "trie diff = Average: " << accumulate(m["trie_diff"].begin(), m["trie_diff"].end(), 0.0) / REPEATS << " STDEV: " << variance(m["trie_diff"]) << endl;
-        cout << "=======================================================" << endl;
+    //     }
+    //     cout << "std_map = Average: " << accumulate(m["std_map"].begin(), m["std_map"].end(), 0.0) / REPEATS << " STDEV: " << variance(m["std_map"]) << endl;
+    //     cout << "trie = Average: " << accumulate(m["trie"].begin(), m["trie"].end(), 0.0) / REPEATS << " STDEV: " << variance(m["trie"]) << endl;
+    //     cout << "std_map diff = Average: " << accumulate(m["std_map_diff"].begin(), m["std_map_diff"].end(), 0.0) / REPEATS << " STDEV: " << variance(m["std_map_diff"]) << endl;
+    //     cout << "trie diff = Average: " << accumulate(m["trie_diff"].begin(), m["trie_diff"].end(), 0.0) / REPEATS << " STDEV: " << variance(m["trie_diff"]) << endl;
+    //     cout << "=======================================================" << endl;
        
-        m.clear();
-        cout << endl;
-    }
+    //     m.clear();
+    //     cout << endl;
+    // }
     // test8();
     // test9();
 

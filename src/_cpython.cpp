@@ -91,7 +91,7 @@ static PyMethodDef PyHandleTrie_methods[] = {
 // Define the PyHandleTrie type
 static PyTypeObject PyHandleTrieType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "handletrie.HandleTrie",          // tp_name
+    "handletrie_cpython.HandleTrie",          // tp_name
     sizeof(PyHandleTrieObject),        // tp_basicsize
     0,                            // tp_itemsize
     NULL,  // tp_dealloc
@@ -133,14 +133,14 @@ static PyTypeObject PyHandleTrieType = {
 // Initialize the module
 static PyModuleDef handletrie = {
     PyModuleDef_HEAD_INIT,
-    "handletrie",                // m_name
+    "handletrie_cpython",                // m_name
     "Example module that creates a HandleTrie", // m_doc
     -1,                           // m_size
     NULL,                         // m_methods
 };
 
 // Initialize the module
-PyMODINIT_FUNC PyInit_handletrie(void) {
+PyMODINIT_FUNC PyInit_handletrie_cpython(void) {
     PyObject* m;
     if (PyType_Ready(&PyHandleTrieType) < 0) {
         return NULL;
