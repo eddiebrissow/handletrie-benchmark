@@ -312,6 +312,7 @@ def main():
     #         3)
 
 
+    # max 6.24×10^10
     for i in [1000, 100000, 1000000, 10000000]:
         # generate_random(i)
         # print(f"Testing {i} nodes")
