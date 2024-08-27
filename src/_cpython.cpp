@@ -17,14 +17,14 @@ class Value: public HandleTrie::TrieValue {
         PyObject*  value_;
         Value(PyObject* value) {
             this->value_ = value;
-            // Py_XINCREF(value_);
+            Py_XINCREF(value_);
         }
         void merge(TrieValue *other) {
 
         }
         ~Value() {
-            delete value_;
-            // Py_XDECREF(value_);
+            // delete value_;
+            Py_XDECREF(value_);
         }
 
         std::string to_string(){
@@ -40,7 +40,25 @@ static int PyHandleTrie_init(PyHandleTrieObject* self, PyObject* args) {
         return -1;
     }
     self->trie = new HandleTrie(key_size);
+    // Py_XINCREF(&self->trie)
     return 0;
+}
+
+
+static void PyHandleTrie_dealloc(PyHandleTrieObject* self) {
+
+
+        // Clean up the HandleTrie instance
+    delete self->trie;
+    // self->trie = nullptr;
+
+    // Call the base class's deallocation function
+    Py_TYPE(self)->tp_free((PyObject*)self);
+
+
+    // delete self->trie;
+    // Py_XDECREF(self->trie);
+    // Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 
@@ -67,6 +85,45 @@ static PyObject* PyHandleTrie_insert(PyHandleTrieObject* self, PyObject* args) {
 }
 
 
+static PyObject* generate_word(PyHandleTrieObject* self, PyObject* args) {
+    int key_size;
+    char buffer[1000];
+    if (!PyArg_ParseTuple(args, "i", &key_size)) {
+        return nullptr; // Return NULL on failure
+    }
+
+    char R_TLB[16] = {
+    '0',
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    'a',
+    'b',
+    'c',
+    'd',
+    'e',
+    'f',
+    };
+
+
+    for (unsigned int j = 0; j < key_size; j++) {
+        buffer[j] = R_TLB[(rand() % 16)];
+    }
+    buffer[key_size] = 0;
+    string s = buffer;
+    // PyObject* pValue = PyBytes_FromString(s.c_str());
+    // PyObject* pValue = PyUnicode_FromString(s.c_str());
+
+    return PyUnicode_FromString(s.c_str());
+}
+
+
 static PyObject* PyHandleTrie_lookup(PyHandleTrieObject* self, PyObject* args) {
     const char* key;
     if (!PyArg_ParseTuple(args, "s", &key)) {
@@ -88,13 +145,18 @@ static PyMethodDef PyHandleTrie_methods[] = {
     {NULL}  // Sentinel
 };
 
+static PyMethodDef OtherMethods[] = {
+    {"generate_word", (PyCFunction)generate_word, METH_VARARGS, ""},
+    {nullptr, nullptr, 0, nullptr} // Sentinel
+};
+
 // Define the PyHandleTrie type
 static PyTypeObject PyHandleTrieType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "handletrie_cpython.HandleTrie",          // tp_name
     sizeof(PyHandleTrieObject),        // tp_basicsize
     0,                            // tp_itemsize
-    NULL,  // tp_dealloc
+    (destructor)PyHandleTrie_dealloc,          // tp_dealloc
     0,                            // tp_vectorcall_offset
     NULL,                         // tp_getattr
     NULL,                         // tp_setattr
@@ -136,7 +198,7 @@ static PyModuleDef handletrie = {
     "handletrie_cpython",                // m_name
     "Example module that creates a HandleTrie", // m_doc
     -1,                           // m_size
-    NULL,                         // m_methods
+    OtherMethods,                         // m_methods
 };
 
 // Initialize the module

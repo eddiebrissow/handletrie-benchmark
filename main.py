@@ -163,17 +163,15 @@ def none(baseline, s):
 
 @measure
 def benchmark_python_dict(f, n_insertions: int = 1000000, **kwargs):
-    count = 0
-    baseline = {}
     for key_count in {1, 2, 5}:
-        str_key = str(key_count)
+        # str_key = str(key_count)
         key_size: int = (HANDLE_HASH_SIZE - 1) * key_count
+        baseline = {}
         for i in range(n_insertions):
-            count += 1
-            count += key_size
-            s = "".join([R_TLB[libs.rand() % 16] for j in range(key_size)])
+            # s = "".join([R_TLB[libs.rand() % 16] for j in range(key_size)])
             # s = "".join([R_TLB[R[str_key][i][j]] for j in range(key_size)])
-            s = s[:key_size] + '0' + s[key_size + 1:]
+            # s = s[:key_size] + '0' + s[key_size + 1:]
+            s = handletrie_cpython.generate_word(key_size)
 
             f(baseline, s)
 
@@ -191,20 +189,22 @@ def test_cpython_handle_trie(baseline, s):
 
 @measure
 def benchmark_python_handle_trie(f, n_insertions: int = 1000000, **kwargs):
-    count = 0
+    # count = 0
     for key_count in {1, 2, 5}:
-        str_key = str(key_count)
+        # str_key = str(key_count)
         key_size: int = (HANDLE_HASH_SIZE - 1) * key_count
         if kwargs.get("module"):
-            baseline = kwargs["module"].HandleTrie(key_size + 1)
+            baseline = kwargs["module"].HandleTrie(key_size)
         else:
             baseline = None
         for i in range(n_insertions):
-            count += 1
-            count += key_size
-            s = "".join([R_TLB[libs.rand() % 16] for j in range(key_size)])
+            # count += 1
+            # count += key_size
+            # s = "".join([R_TLB[libs.rand() % 16] for j in range(key_size)])
             # s = "".join([R_TLB[R[str_key][i][j]] for j in range(key_size)])
-            s = s[:key_size] + '0' + s[key_size + 1:]
+            # s = s[:key_size] + '0' + s[key_size + 1:]
+            s = handletrie_cpython.generate_word(key_size)
+
 
             f(baseline, s)
 
@@ -289,10 +289,14 @@ def main():
 
     # global TIME
 
-    # a = HandleTrie(5)
+    # a = handletrie_cpython.HandleTrie(5)
+    # z = handletrie_cpython.generate_word(5)
+    # x = {}
+    # x[z] = 1
     # a.insert("aaaaa", "1")
     # a.insert("aaaab", "2")
-    # a.insert("aaaac", "3")
+    # a.insert(z, "3")
+    # print(x[z], z)
 
     # print('lookip')
     # print(a.lookup("aaazc"))
@@ -300,6 +304,10 @@ def main():
     # print(a.lookup("aaaaa"))
     # print(a.lookup("aaaab"))
     # print(a.lookup("aaazc"))
+    # print(a.lookup(z))
+
+
+    # return
 
     # [1000, 100000, 1000000, 10000000, 1000000000]
 
