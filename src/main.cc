@@ -105,6 +105,7 @@ void benchmark_handletrie(unsigned int n_insertions = 1000000)
                 value->count += 1;
             }
         }
+        delete trie;
     }
 }
 
@@ -129,7 +130,7 @@ void benchmark_none(unsigned int n_insertions = 1000000)
 void benchmark_map(unsigned int n_insertions = 1000000)
 {
     char buffer[1000];
-    map<string, int> baseline;
+    unordered_map<string, int> baseline;
     for (unsigned int key_count : {1, 2, 5})
     {
         unsigned int key_size = (HANDLE_HASH_SIZE - 1) * key_count;

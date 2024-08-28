@@ -258,14 +258,14 @@ def main():
         for i in [1000, 100000, 1000000, 10000000, 60000000]:
             print(f"Testing {add_comma(i)} nodes")
             RUN = "c++"
-            repeat(
-                benchmark_cxx,
-                [
-                    {"f": cxx_handletrie, "name": "cxx_handletrie", "n_insertions": i},
-                    {"f": cxx_none, "name": "cxx_none", "n_insertions": i},
-                ],
-                10,
-            )
+            # repeat(
+            #     benchmark_cxx,
+            #     [
+            #         {"f": cxx_handletrie, "name": "cxx_handletrie", "n_insertions": i},
+            #         {"f": cxx_none, "name": "cxx_none", "n_insertions": i},
+            #     ],
+            #     10,
+            # )
 
             print(f"Testing {add_comma(i)} nodes")
             repeat(
@@ -277,79 +277,79 @@ def main():
                 10,
             )
 
-        for i in [1000, 100000, 1000000, 10000000, 60000000]:
-            RUN = "python"
-            print(f"Testing {add_comma(i)} nodes")
+        # for i in [1000, 100000, 1000000, 10000000, 60000000]:
+        #     RUN = "python"
+        #     print(f"Testing {add_comma(i)} nodes")
 
-            repeat(
-                benchmark_python_dict,
-                [
-                    {
-                        "f": test_dict,
-                        "name": "benchmark_python_dict",
-                        "n_insertions": i,
-                    },
-                    {"f": none, "name": "benchmark_python_dict", "n_insertions": i},
-                ],
-                10,
-            )
+        #     repeat(
+        #         benchmark_python_dict,
+        #         [
+        #             {
+        #                 "f": test_dict,
+        #                 "name": "benchmark_python_dict",
+        #                 "n_insertions": i,
+        #             },
+        #             {"f": none, "name": "benchmark_python_dict", "n_insertions": i},
+        #         ],
+        #         10,
+        #     )
 
-            print(f"Testing {add_comma(i)} nodes")
-            repeat(
-                benchmark_python_handle_trie,
-                [
-                    {
-                        "f": test_handle_trie,
-                        "name": "benchmark_handle_trie_cpython",
-                        "n_insertions": i,
-                        "module": handletrie_cpython,
-                    },
-                    {
-                        "f": none,
-                        "name": "benchmark_handle_trie_cpython",
-                        "n_insertions": i,
-                    },
-                ],
-                10,
-            )
+        #     print(f"Testing {add_comma(i)} nodes")
+        #     repeat(
+        #         benchmark_python_handle_trie,
+        #         [
+        #             {
+        #                 "f": test_handle_trie,
+        #                 "name": "benchmark_handle_trie_cpython",
+        #                 "n_insertions": i,
+        #                 "module": handletrie_cpython,
+        #             },
+        #             {
+        #                 "f": none,
+        #                 "name": "benchmark_handle_trie_cpython",
+        #                 "n_insertions": i,
+        #             },
+        #         ],
+        #         10,
+        #     )
 
-            print(f"Testing {add_comma(i)} nodes")
-            repeat(
-                benchmark_python_handle_trie,
-                [
-                    {
-                        "f": test_handle_trie,
-                        "name": "benchmark_handle_trie_nanobind",
-                        "n_insertions": i,
-                        "module": handletrie_nanobind,
-                    },
-                    {
-                        "f": none,
-                        "name": "benchmark_handle_trie_nanobind",
-                        "n_insertions": i,
-                    },
-                ],
-                10,
-            )
+        #     print(f"Testing {add_comma(i)} nodes")
+        #     repeat(
+        #         benchmark_python_handle_trie,
+        #         [
+        #             {
+        #                 "f": test_handle_trie,
+        #                 "name": "benchmark_handle_trie_nanobind",
+        #                 "n_insertions": i,
+        #                 "module": handletrie_nanobind,
+        #             },
+        #             {
+        #                 "f": none,
+        #                 "name": "benchmark_handle_trie_nanobind",
+        #                 "n_insertions": i,
+        #             },
+        #         ],
+        #         10,
+        #     )
 
-            print(f"Testing {add_comma(i)} nodes")
-            repeat(
-                benchmark_python_handle_trie,
-                [
-                    {
-                        "f": test_handle_trie,
-                        "name": "benchmark_handle_trie_pybind",
-                        "n_insertions": i,
-                        "module": handletrie_pybind,
-                    },
-                    {
-                        "f": none,
-                        "name": "benchmark_handle_trie_pybind",
-                        "n_insertions": i,
-                    },
-                ],
-                10,
-            )
+        #     print(f"Testing {add_comma(i)} nodes")
+        #     repeat(
+        #         benchmark_python_handle_trie,
+        #         [
+        #             {
+        #                 "f": test_handle_trie,
+        #                 "name": "benchmark_handle_trie_pybind",
+        #                 "n_insertions": i,
+        #                 "module": handletrie_pybind,
+        #             },
+        #             {
+        #                 "f": none,
+        #                 "name": "benchmark_handle_trie_pybind",
+        #                 "n_insertions": i,
+        #             },
+        #         ],
+        #         10,
+        #     )
 
     except KeyboardInterrupt:
         run_event.clear()
