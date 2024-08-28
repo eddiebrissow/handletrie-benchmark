@@ -1,50 +1,39 @@
 import time
 import json
 import statistics
-from functools import reduce
-import handletrie_cpython
-import handletrie_nanobind
-import handletrie_pybind
-
-
-
 import os
 import threading
 import subprocess
 import gc
 
-HANDLE_HASH_SIZE = 33
-
+from functools import reduce
+from lib import handletrie_cpython, handletrie_nanobind, handletrie_pybind
 from ctypes import CDLL
 
 libs = CDLL("libc.so.6")
 MEMORY = 0
 RUN = "python"
-OROUND = 5 # output round
-
-
+OROUND = 5  # output round
 R = None
-
+HANDLE_HASH_SIZE = 33
 TIME = 0
-
-
 R_TLB = [
-    '0',
-    '1',
-    '2',
-    '3',
-    '4',
-    '5',
-    '6',
-    '7',
-    '8',
-    '9',
-    'a',
-    'b',
-    'c',
-    'd',
-    'e',
-    'f',
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "a",
+    "b",
+    "c",
+    "d",
+    "e",
+    "f",
 ]
 
 
@@ -54,12 +43,14 @@ def lcg(modulus: int, a: int, c: int, seed: int):
         seed = (a * seed + c) % modulus
         yield seed
 
+
 def lcg_to_interval(generator, interval_min: int, interval_max: int):
     range_size = interval_max - interval_min + 1
-    
+
     for value in generator:
         # Map value to the interval [interval_min, interval_max]
         yield interval_min + (value % range_size)
+
 
 def measure(func):
     def wrapper(*args, **kwargs):
@@ -70,20 +61,23 @@ def measure(func):
         stop_cxx = time.perf_counter_ns()
         stop = time.process_time_ns()
         if RUN == "c++":
-            TIME = ( (stop_cxx -  start_cxx) - (stop - start) ) / 1000000000
+            TIME = ((stop_cxx - start_cxx) - (stop - start)) / 1000000000
         else:
             TIME = (stop - start) / 1000000000
         # print("=======================================================")
         # print(f"{func.__name__}: {TIME}\t Memory: {MEMORY}GB")
         # print("=======================================================")
+
     return wrapper
 
 
 def diff(values):
-    return round(abs(reduce(lambda a,b: a-b, values)), OROUND)
+    return round(abs(reduce(lambda a, b: a - b, values)), OROUND)
+
 
 def mean_round(values):
     return round(statistics.mean(values), OROUND)
+
 
 def stdev_round(values):
     return round(statistics.stdev(values), OROUND)
@@ -107,25 +101,29 @@ def repeat(f, params, n=2):
     diff_m = []
     diff_sdv = []
     memory_list = []
-    for k,v in check.items():
+    for k, v in check.items():
         vv = v["time"]
-        print(f"{k} = Average: {mean_round(vv)}, STDEV: {stdev_round(vv)}, Memory: {mean_round(v['memory'])} GB")
+        print(
+            f"{k} = Average: {mean_round(vv)}, STDEV: {stdev_round(vv)}, Memory: {mean_round(v['memory'])} GB"
+        )
         diff_m.append(statistics.mean(vv))
         diff_sdv.append(statistics.stdev(vv))
         memory_list.append(statistics.mean(v["memory"]))
 
-    print(f"Difference = Average: {diff(diff_m)}, STDEV: {diff(diff_sdv)}, Memory: {diff(memory_list)} GB")
+    print(
+        f"Difference = Average: {diff(diff_m)}, STDEV: {diff(diff_sdv)}, Memory: {diff(memory_list)} GB"
+    )
     print("=======================================================")
 
 
 def save_json(data, append=""):
-    with open(append + 'data.json', 'w') as f:
+    with open(append + "data.json", "w") as f:
         json.dump(data, f)
 
 
 def load_json(append=""):
     try:
-        with open(append + 'data.json', 'r') as f:
+        with open(append + "data.json", "r") as f:
             return json.load(f)
     except FileNotFoundError:
         return {}
@@ -157,6 +155,7 @@ def test_dict(baseline, s):
 def none(baseline, s):
     pass
 
+
 @measure
 def benchmark_python_dict(f, n_insertions: int = 1000000, **kwargs):
     for key_count in {1, 2, 5}:
@@ -172,7 +171,6 @@ def benchmark_python_dict(f, n_insertions: int = 1000000, **kwargs):
             f(baseline, s)
 
 
-
 def test_handle_trie(baseline, s):
     v = baseline.lookup(s)
     if not v:
@@ -180,7 +178,6 @@ def test_handle_trie(baseline, s):
     else:
         v += 1
         baseline.insert(s, v)
-
 
 
 @measure
@@ -198,31 +195,33 @@ def benchmark_python_handle_trie(f, n_insertions: int = 1000000, **kwargs):
             # s = s[:key_size] + '0' + s[key_size + 1:]
             s = handletrie_cpython.generate_word(key_size)
 
-
             f(baseline, s)
 
 
 def cxx_none():
     return "none"
 
+
 def cxx_handletrie():
     return "handletrie"
+
 
 def cxx_map():
     return "map"
 
+
 @measure
 def benchmark_cxx(f, n_insertions: int = 1000000, **kwargs):
-    subprocess.run(['build/HandleTrie', f(), str(n_insertions)])
+    subprocess.run(["build/HandleTrie", f(), str(n_insertions)])
 
 
 def get_pid():
     global RUN
     if RUN == "c++":
-        ps = subprocess.run('ps -a'.split(' '), stdout=subprocess.PIPE)
+        ps = subprocess.run("ps -a".split(" "), stdout=subprocess.PIPE)
         s = str(ps.stdout)
-        if 'HandleTrie' in s:
-            return next((f for f in s.split('\\n') if 'HandleTrie' in f)).split(' ')[1]
+        if "HandleTrie" in s:
+            return next((f for f in s.split("\\n") if "HandleTrie" in f)).split(" ")[1]
     return os.getpid()
 
 
@@ -231,19 +230,20 @@ def memory_count(run_event, delay=1):
     while run_event.is_set():
         pid = get_pid()
         if pid:
-            out = subprocess.run(f"ps -p {pid} -o rss=".split(' '), stdout=subprocess.PIPE)
+            out = subprocess.run(
+                f"ps -p {pid} -o rss=".split(" "), stdout=subprocess.PIPE
+            )
             try:
                 MEMORY = round(int(out.stdout) / 1000000.0, 5)
             except:
                 MEMORY = 0
                 pass
-            # print(pid, round(int(out.stdout) / 1000000.0, 2)) 
             time.sleep(delay)
 
 
 def add_comma(number):
     s = str(number)[::-1]
-    return ','.join([s[i:i+3] for i in range(0, len(s), 3)])[::-1]
+    return ",".join([s[i : i + 3] for i in range(0, len(s), 3)])[::-1]
 
 
 def main():
@@ -256,48 +256,102 @@ def main():
     # max 6.24×10^10
     try:
         for i in [1000, 100000, 1000000, 10000000, 60000000]:
-            # generate_random(i)
             print(f"Testing {add_comma(i)} nodes")
             RUN = "c++"
-            repeat(benchmark_cxx, [
-                {'f': cxx_handletrie, 'name': 'cxx_handletrie', 'n_insertions': i},
-                {'f': cxx_none, 'name': 'cxx_none', 'n_insertions': i},
-            ], 10)
+            repeat(
+                benchmark_cxx,
+                [
+                    {"f": cxx_handletrie, "name": "cxx_handletrie", "n_insertions": i},
+                    {"f": cxx_none, "name": "cxx_none", "n_insertions": i},
+                ],
+                10,
+            )
 
             print(f"Testing {add_comma(i)} nodes")
-            repeat(benchmark_cxx, [
-                {'f': cxx_map, 'name': 'cxx_none', 'n_insertions': i},
-                {'f': cxx_none, 'name': 'cxx_none', 'n_insertions': i},
-            ], 10)
+            repeat(
+                benchmark_cxx,
+                [
+                    {"f": cxx_map, "name": "cxx_none", "n_insertions": i},
+                    {"f": cxx_none, "name": "cxx_none", "n_insertions": i},
+                ],
+                10,
+            )
 
         for i in [1000, 100000, 1000000, 10000000, 60000000]:
             RUN = "python"
             print(f"Testing {add_comma(i)} nodes")
 
-            repeat(benchmark_python_dict, [
-                {'f': test_dict, 'name': 'benchmark_python_dict', 'n_insertions': i}, 
-                {'f': none, 'name': 'benchmark_python_dict', 'n_insertions': i}], 
-                10)
-            
-            print(f"Testing {add_comma(i)} nodes")
-            repeat(benchmark_python_handle_trie, [
-                {'f': test_handle_trie, 'name': 'benchmark_handle_trie_cpython', 'n_insertions': i, 'module': handletrie_cpython}, 
-                {'f': none, 'name': 'benchmark_handle_trie_cpython', 'n_insertions': i}], 
-                10)
+            repeat(
+                benchmark_python_dict,
+                [
+                    {
+                        "f": test_dict,
+                        "name": "benchmark_python_dict",
+                        "n_insertions": i,
+                    },
+                    {"f": none, "name": "benchmark_python_dict", "n_insertions": i},
+                ],
+                10,
+            )
 
             print(f"Testing {add_comma(i)} nodes")
-            repeat(benchmark_python_handle_trie, [
-                {'f': test_handle_trie, 'name': 'benchmark_handle_trie_nanobind', 'n_insertions': i, 'module': handletrie_nanobind}, 
-                {'f': none, 'name': 'benchmark_handle_trie_nanobind', 'n_insertions': i}], 
-                10)
-            
+            repeat(
+                benchmark_python_handle_trie,
+                [
+                    {
+                        "f": test_handle_trie,
+                        "name": "benchmark_handle_trie_cpython",
+                        "n_insertions": i,
+                        "module": handletrie_cpython,
+                    },
+                    {
+                        "f": none,
+                        "name": "benchmark_handle_trie_cpython",
+                        "n_insertions": i,
+                    },
+                ],
+                10,
+            )
+
             print(f"Testing {add_comma(i)} nodes")
-            repeat(benchmark_python_handle_trie, [
-                {'f': test_handle_trie, 'name': 'benchmark_handle_trie_pybind', 'n_insertions': i, 'module': handletrie_pybind}, 
-                {'f': none, 'name': 'benchmark_handle_trie_pybind', 'n_insertions': i}], 
-                10)
-            
-    except KeyboardInterrupt:  
+            repeat(
+                benchmark_python_handle_trie,
+                [
+                    {
+                        "f": test_handle_trie,
+                        "name": "benchmark_handle_trie_nanobind",
+                        "n_insertions": i,
+                        "module": handletrie_nanobind,
+                    },
+                    {
+                        "f": none,
+                        "name": "benchmark_handle_trie_nanobind",
+                        "n_insertions": i,
+                    },
+                ],
+                10,
+            )
+
+            print(f"Testing {add_comma(i)} nodes")
+            repeat(
+                benchmark_python_handle_trie,
+                [
+                    {
+                        "f": test_handle_trie,
+                        "name": "benchmark_handle_trie_pybind",
+                        "n_insertions": i,
+                        "module": handletrie_pybind,
+                    },
+                    {
+                        "f": none,
+                        "name": "benchmark_handle_trie_pybind",
+                        "n_insertions": i,
+                    },
+                ],
+                10,
+            )
+
+    except KeyboardInterrupt:
         run_event.clear()
         thread.join()
 
