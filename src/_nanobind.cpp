@@ -3,47 +3,42 @@
 #include "HandleTrie.h"
 #include <iostream>
 
-
 using namespace attention_broker_server;
 using namespace std;
 
 namespace nb = nanobind;
 
-class Value : public HandleTrie::TrieValue {
-    public:
-        nb::object value_obj;
-        string value_str;
+class Value : public HandleTrie::TrieValue
+{
+public:
+    nb::object value_obj;
+    Value(nb::object value)
+    {
+        this->value_obj = value;
+    }
+    void merge(TrieValue *other)
+    {
+    }
 
-        Value(nb::object value) {
-            this->value_obj = value;
-        }
-
-        Value(string value) {
-            this->value_str = value;
-        }
-        void merge(TrieValue *other) {
-
-        }
-
-        std::string to_string(){
-        }
+    std::string to_string()
+    {
+    }
 };
 
-
-
-NB_MODULE(handletrie_nanobind, m) {
+NB_MODULE(handletrie_nanobind, m)
+{
 
     nb::class_<HandleTrie>(m, "HandleTrie")
         .def(nb::init<int>())
-        .def("insert", [](HandleTrie& self, std::string key, nb::object obj){
+        .def("insert", [](HandleTrie &self, std::string key, nb::object obj)
+             {
             Value *v = new Value(obj);
-            self.insert(key, v);
-        })
-        .def("lookup", [](HandleTrie& self, std::string key)-> nb::object {
+            self.insert(key, v); })
+        .def("lookup", [](HandleTrie &self, std::string key) -> nb::object
+             {
             Value *v = (Value*) self.lookup(key);
             if (v == NULL){
                 return nb::none();
             }
-            return v->value_obj;
-        });
+            return v->value_obj; });
 }

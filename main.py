@@ -18,10 +18,6 @@ HANDLE_HASH_SIZE = 33
 from ctypes import CDLL
 
 libs = CDLL("libc.so.6")
-PID = 0
-PIDCXX = None
-PIDS = 0
-STATS = 1
 MEMORY = 0
 RUN = "python"
 OROUND = 5 # output round
@@ -177,7 +173,7 @@ def benchmark_python_dict(f, n_insertions: int = 1000000, **kwargs):
 
 
 
-def test_cpython_handle_trie(baseline, s):
+def test_handle_trie(baseline, s):
     v = baseline.lookup(s)
     if not v:
         baseline.insert(s, 0)
@@ -189,7 +185,6 @@ def test_cpython_handle_trie(baseline, s):
 
 @measure
 def benchmark_python_handle_trie(f, n_insertions: int = 1000000, **kwargs):
-    # count = 0
     for key_count in {1, 2, 5}:
         # str_key = str(key_count)
         key_size: int = (HANDLE_HASH_SIZE - 1) * key_count
@@ -198,8 +193,6 @@ def benchmark_python_handle_trie(f, n_insertions: int = 1000000, **kwargs):
         else:
             baseline = None
         for i in range(n_insertions):
-            # count += 1
-            # count += key_size
             # s = "".join([R_TLB[libs.rand() % 16] for j in range(key_size)])
             # s = "".join([R_TLB[R[str_key][i][j]] for j in range(key_size)])
             # s = s[:key_size] + '0' + s[key_size + 1:]
@@ -207,35 +200,6 @@ def benchmark_python_handle_trie(f, n_insertions: int = 1000000, **kwargs):
 
 
             f(baseline, s)
-
-
-# estrutura com mais dados e teste mais longo, --gil
-# rodar varios nodos
-
-def list_test(a=[]):
-    b = [i for i in a]
-
-
-def no_list(a=None):
-    # a = a or []
-    b = [] if a is None else [i for i in a]
-    # if a is None:
-    #     b = []
-    # else:
-    #     b = [i for i in a]
-
-
-@measure
-def aaa(f):
-    for i in range(1000000):
-        f()
-
-
-@measure
-def bbb(f):
-    for i in range(1000000):
-        f([1, 2])
-
 
 
 def cxx_none():
@@ -252,119 +216,90 @@ def benchmark_cxx(f, n_insertions: int = 1000000, **kwargs):
     subprocess.run(['build/HandleTrie', f(), str(n_insertions)])
 
 
-
 def get_pid():
-    global PID, PIDCXX, PIDS
-    if PIDS == 1:
+    global RUN
+    if RUN == "c++":
         ps = subprocess.run('ps -a'.split(' '), stdout=subprocess.PIPE)
         s = str(ps.stdout)
         if 'HandleTrie' in s:
-            PIDCXX = next((f for f in s.split('\\n') if 'HandleTrie' in f)).split(' ')[1]
-            return PIDCXX
-    return PID
+            return next((f for f in s.split('\\n') if 'HandleTrie' in f)).split(' ')[1]
+    return os.getpid()
 
 
-def memory_count():
-    global STATS, MEMORY
-    while True:
-        if STATS == 0:
-            break
-        out = subprocess.run(f"ps -p {get_pid()} -o rss=".split(' '), stdout=subprocess.PIPE)
-        try:
-            MEMORY = round(int(out.stdout) / 1000000.0, 2)
-        except:
-            pass
-        # print(pid, round(int(out.stdout) / 1000000.0, 2), STATS ) 
-        time.sleep(1)
+def memory_count(run_event, delay=1):
+    global MEMORY
+    while run_event.is_set():
+        pid = get_pid()
+        if pid:
+            out = subprocess.run(f"ps -p {pid} -o rss=".split(' '), stdout=subprocess.PIPE)
+            try:
+                MEMORY = round(int(out.stdout) / 1000000.0, 5)
+            except:
+                MEMORY = 0
+                pass
+            # print(pid, round(int(out.stdout) / 1000000.0, 2)) 
+            time.sleep(delay)
 
 
-
+def add_comma(number):
+    s = str(number)[::-1]
+    return ','.join([s[i:i+3] for i in range(0, len(s), 3)])[::-1]
 
 
 def main():
-    global PID, STATS, PIDS, RUN
-    PID = os.getpid()
-    x = threading.Thread(target=memory_count)
-    x.start()
-
-    # global TIME
-
-    # a = handletrie_cpython.HandleTrie(5)
-    # z = handletrie_cpython.generate_word(5)
-    # x = {}
-    # x[z] = 1
-    # a.insert("aaaaa", "1")
-    # a.insert("aaaab", "2")
-    # a.insert(z, "3")
-    # print(x[z], z)
-
-    # print('lookip')
-    # print(a.lookup("aaazc"))
-
-    # print(a.lookup("aaaaa"))
-    # print(a.lookup("aaaab"))
-    # print(a.lookup("aaazc"))
-    # print(a.lookup(z))
-
-
-    # return
-
-    # [1000, 100000, 1000000, 10000000, 1000000000]
-
-    # for i in [1000, 100000, 1000000]:
-    #     generate_random(i)
-    #     print(f"Testing {i} nodes")
-    #     repeat(benchmark_python_dict, [
-    #         {'f': test_dict, 'name': 'benchmark_python_dict', 'n_insertions': i}, 
-    #         {'f': none, 'name': 'benchmark_python_dict', 'n_insertions': i}], 
-    #         3)
-
+    global RUN
+    run_event = threading.Event()
+    thread = threading.Thread(target=memory_count, args=(run_event, 1))
+    run_event.set()
+    thread.start()
 
     # max 6.24×10^10
-    for i in [1000, 100000, 1000000, 10000000]:
-        # generate_random(i)
-        # print(f"Testing {i} nodes")
-        # PIDS = 1
-        # RUN = "c++"
-        # repeat(benchmark_cxx, [
-        #     {'f': cxx_handletrie, 'name': 'cxx_handletrie', 'n_insertions': i},
-        #     {'f': cxx_none, 'name': 'cxx_none', 'n_insertions': i},
-        # ], 10)
+    try:
+        for i in [1000, 100000, 1000000, 10000000, 60000000]:
+            # generate_random(i)
+            print(f"Testing {add_comma(i)} nodes")
+            RUN = "c++"
+            repeat(benchmark_cxx, [
+                {'f': cxx_handletrie, 'name': 'cxx_handletrie', 'n_insertions': i},
+                {'f': cxx_none, 'name': 'cxx_none', 'n_insertions': i},
+            ], 10)
 
-        # print(f"Testing {i} nodes")
-        # repeat(benchmark_cxx, [
-        #     {'f': cxx_map, 'name': 'cxx_none', 'n_insertions': i},
-        #     {'f': cxx_none, 'name': 'cxx_none', 'n_insertions': i},
-        # ], 10)
+            print(f"Testing {add_comma(i)} nodes")
+            repeat(benchmark_cxx, [
+                {'f': cxx_map, 'name': 'cxx_none', 'n_insertions': i},
+                {'f': cxx_none, 'name': 'cxx_none', 'n_insertions': i},
+            ], 10)
 
-        RUN = "python"
-        print(f"Testing {i} nodes")
+        for i in [1000, 100000, 1000000, 10000000, 60000000]:
+            RUN = "python"
+            print(f"Testing {add_comma(i)} nodes")
 
-        repeat(benchmark_python_dict, [
-            {'f': test_dict, 'name': 'benchmark_python_dict', 'n_insertions': i}, 
-            {'f': none, 'name': 'benchmark_python_dict', 'n_insertions': i}], 
-            10)
+            repeat(benchmark_python_dict, [
+                {'f': test_dict, 'name': 'benchmark_python_dict', 'n_insertions': i}, 
+                {'f': none, 'name': 'benchmark_python_dict', 'n_insertions': i}], 
+                10)
+            
+            print(f"Testing {add_comma(i)} nodes")
+            repeat(benchmark_python_handle_trie, [
+                {'f': test_handle_trie, 'name': 'benchmark_handle_trie_cpython', 'n_insertions': i, 'module': handletrie_cpython}, 
+                {'f': none, 'name': 'benchmark_handle_trie_cpython', 'n_insertions': i}], 
+                10)
 
-        print(f"Testing {i} nodes")
-        repeat(benchmark_python_handle_trie, [
-            {'f': test_cpython_handle_trie, 'name': 'benchmark_handle_trie_cpython', 'n_insertions': i, 'module': handletrie_cpython}, 
-            {'f': none, 'name': 'benchmark_handle_trie_cpython', 'n_insertions': i}], 
-            10)
-
-        print(f"Testing {i} nodes")
-        repeat(benchmark_python_handle_trie, [
-            {'f': test_cpython_handle_trie, 'name': 'benchmark_handle_trie_nanobind', 'n_insertions': i, 'module': handletrie_nanobind}, 
-            {'f': none, 'name': 'benchmark_handle_trie_nanobind', 'n_insertions': i}], 
-            10)
-        
-        print(f"Testing {i} nodes")
-        repeat(benchmark_python_handle_trie, [
-            {'f': test_cpython_handle_trie, 'name': 'benchmark_handle_trie_pybind', 'n_insertions': i, 'module': handletrie_pybind}, 
-            {'f': none, 'name': 'benchmark_handle_trie_pybind', 'n_insertions': i}], 
-            10)
-
-    STATS = 0
-    x.join()
+            print(f"Testing {add_comma(i)} nodes")
+            repeat(benchmark_python_handle_trie, [
+                {'f': test_handle_trie, 'name': 'benchmark_handle_trie_nanobind', 'n_insertions': i, 'module': handletrie_nanobind}, 
+                {'f': none, 'name': 'benchmark_handle_trie_nanobind', 'n_insertions': i}], 
+                10)
+            
+            print(f"Testing {add_comma(i)} nodes")
+            repeat(benchmark_python_handle_trie, [
+                {'f': test_handle_trie, 'name': 'benchmark_handle_trie_pybind', 'n_insertions': i, 'module': handletrie_pybind}, 
+                {'f': none, 'name': 'benchmark_handle_trie_pybind', 'n_insertions': i}], 
+                10)
+            
+    except KeyboardInterrupt:  
+        run_event.clear()
+        thread.join()
 
 
 main()
