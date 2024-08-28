@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-// #include <mbedtls/md5.h>
 #include <openssl/md5.h>
 #include "expression_hasher.h"
 
@@ -23,19 +22,6 @@ char *compute_hash(char *input) {
   return strdup(HASH);
 }
 
-// char *compute_hash(char *input) {
-//     mbedtls_md5_context context;
-//     mbedtls_md5_init(&context);
-//     mbedtls_md5_starts(&context);
-//     mbedtls_md5_update(&context, (const unsigned char*) input, strlen(input));
-//     mbedtls_md5_finish(&context, MD5_BUFFER);
-//     mbedtls_md5_free(&context);
-//     for (unsigned int i = 0; i < 16; i++) {
-//         sprintf((char *) ((unsigned long) HASH + 2 * i), "%02x", MD5_BUFFER[i]);
-//     }
-//     HASH[32] = '\0';
-//     return strdup(HASH);
-// }
 
 char *named_type_hash(char *name) {
     return compute_hash(name);
