@@ -7,7 +7,7 @@ import subprocess
 import gc
 
 from functools import reduce
-from lib import handletrie_cpython, handletrie_nanobind, handletrie_pybind
+from cxx import handletrie_cpython, handletrie_nanobind, handletrie_pybind
 from ctypes import CDLL
 
 libs = CDLL("libc.so.6")
